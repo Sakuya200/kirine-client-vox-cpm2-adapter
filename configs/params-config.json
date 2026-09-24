@@ -232,7 +232,7 @@
         },
         "required": false,
         "defaultValue": "",
-        "description": "附加的风格描述文本。"
+        "description": "附加的风格描述文本。仅在「参考音频克隆」模式生效。"
       },
       {
         "name": "cfgValue",

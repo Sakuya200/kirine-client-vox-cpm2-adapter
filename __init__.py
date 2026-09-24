@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
+
+# Strip half-width/full-width parentheses from the control text to avoid
+# breaking the "(control)text" prompt format expected by the model
+# (same handling as the upstream VoxCPM demo app).
+_STYLE_CONTROL_PAREN_PATTERN = re.compile(r"[()（）]")
 
 RUNTIME_METADATA_FILE_NAME = "voxcpm_runtime.json"
 SRC_MODEL_ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +32,7 @@ def load_dependencies() -> SimpleNamespace:
 
 def compose_generation_text(text: str, style_prompt: str) -> str:
     clean_text = text.strip()
-    clean_style = style_prompt.strip()
+    clean_style = _STYLE_CONTROL_PAREN_PATTERN.sub("", style_prompt).strip()
     if not clean_style:
         return clean_text
     return f"({clean_style}){clean_text}"

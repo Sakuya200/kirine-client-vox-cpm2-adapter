@@ -43,8 +43,21 @@ def validate_args(args: argparse.Namespace) -> tuple[Path, Path]:
 def generate_voice_clone_audio(args: argparse.Namespace):
     ref_audio_path, output_path = validate_args(args)
     model, deps = load_model_and_dependencies(args.init_model_path, args.device)
-    generation_text = compose_generation_text(args.text, args.style_prompt)
     mode = args.mode.strip().lower()
+
+    # Ultimate cloning is audio continuation: the model reads the whole target
+    # text aloud, so the "(style)text" control format is unsupported there and
+    # the style prefix would be read out. Upstream disables the control
+    # instruction in this mode as well.
+    if mode == "ultimate":
+        if args.style_prompt.strip():
+            print(
+                "Style prompt is not supported in ultimate cloning mode and will be ignored.",
+                file=sys.stderr,
+            )
+        generation_text = args.text.strip()
+    else:
+        generation_text = compose_generation_text(args.text, args.style_prompt)
 
     if mode == "ultimate":
         wav = model.generate(
